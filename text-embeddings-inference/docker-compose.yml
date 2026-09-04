@@ -1,0 +1,24 @@
+services:
+  embeddings:
+    image: ghcr.io/huggingface/text-embeddings-inference:hopper-1.8
+    command:
+      - --model-id=BAAI/bge-m3
+      - --max-client-batch-size=32
+      - --max-batch-tokens=16384
+      - --max-concurrent-requests=512
+      - --api-key=${HUGGINGFACE_API_KEY}
+    ports:
+      - "8888:80"
+    volumes:
+      - hf_cache:/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${GPU_DEVICE_ID:-0}"]
+              capabilities: [gpu]
+
+volumes:
+  hf_cache:
