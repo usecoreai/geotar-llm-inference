@@ -1,12 +1,21 @@
 services:
   embeddings:
-    image: ghcr.io/huggingface/text-embeddings-inference:hopper-1.8
+    image: vllm/vllm-openai:v0.27.1
+    ipc: host
     command:
-      - --model-id=BAAI/bge-m3
-      - --max-client-batch-size=32
-      - --max-batch-tokens=16384
-      - --max-concurrent-requests=512
-      - --api-key=${HUGGINGFACE_API_KEY}
+      - --model=BAAI/bge-m3
+      - --host=0.0.0.0
+      - --port=80
+      - --runner=pooling
+      - --dtype=half
+      - --enforce-eager
+      - --gpu-memory-utilization=0.7
+      - --swap-space=1
+      - --max-model-len=8192
+      - --max-num-seqs=32
+      - --max-num-batched-tokens=16384
+    environment:
+      HF_HOME: /data
     ports:
       - "8888:80"
     volumes:
