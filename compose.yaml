@@ -6,11 +6,56 @@ services:
       - "8000:8000"
     volumes:
       - ./cache:/root/.cache
-    command: ["--model", "Qwen/Qwen3.8-27B-FP8", "--language-model-only", "--reasoning-parser", "qwen3", "--enable-auto-tool-choice", "--tool-call-parser", "qwen3_coder"]
+    command:
+      [
+        "--model",
+        "Qwen/Qwen3.8-27B-FP8",
+        "--language-model-only",
+        "--reasoning-parser",
+        "qwen3",
+        "--enable-auto-tool-choice",
+        "--tool-call-parser",
+        "qwen3_coder",
+      ]
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ["${GPU_DEVICE_ID:-0}"]
+              device_ids: ["${LLM_GPU_DEVICE_ID:-0}"]
               capabilities: [gpu]
+              
+  embeddings:
+    image: vllm/vllm-openai:v0.27.1
+    ipc: host
+    ports:
+      - "8888:8000"
+    volumes:
+      - ./cache:/root/.cache
+    command:
+      [
+        "--model",
+        "BAAI/bge-m3",
+        "--runner",
+        "pooling",
+        "--dtype",
+        "half",
+        "--enforce-eager",
+        "--swap-space",
+        "1",
+        "--max-model-len",
+        "8192",
+        "--max-num-seqs",
+        "32",
+        "--max-num-batched-tokens",
+        "16384",
+      ]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${EMBEDDINGS_GPU_DEVICE_ID:-0}"]
+              capabilities: [gpu]
+
+  

@@ -1,7 +1,8 @@
-# Qwen3.8-27B-FP8 on H100
+# Qwen3.8-27B-FP8 + BGE-M3 on H100
 
-Text-only inference `Qwen/Qwen3.8-27B-FP8` с reasoning и tool calling через
-OpenAI-совместимый API vLLM.
+Text-only inference `Qwen/Qwen3.8-27B-FP8` с reasoning и tool calling и
+эмбеддинги `BAAI/bge-m3` через OpenAI-совместимый API vLLM. Оба сервиса
+поднимаются одним Compose и шарят кэш весов в `./cache`.
 
 ## Требования
 
@@ -11,20 +12,25 @@ OpenAI-совместимый API vLLM.
 
 ## Запуск
 
-```bash
-docker compose up -d
-docker compose logs -f vllm
+Индексы GPU задаются в `.env`:
+
+```
+LLM_GPU_DEVICE_ID=0
+EMBEDDINGS_GPU_DEVICE_ID=1
 ```
 
-По умолчанию используется GPU 0. Выбор другой карты:
+Запускать нужно на разных GPU девайсах, укажите необходимые в енве, далее:
 
 ```bash
-GPU_DEVICE_ID=2 docker compose up -d
+docker compose up -d
+docker compose logs -f
 ```
 
 Веса и compile cache сохраняются в `./cache` и повторно не скачиваются.
 
 ## Проверка
+
+LLM (`http://localhost:8000`):
 
 ```bash
 curl http://localhost:8000/v1/chat/completions \
@@ -33,6 +39,17 @@ curl http://localhost:8000/v1/chat/completions \
     "model": "Qwen/Qwen3.8-27B-FP8",
     "messages": [{"role": "user", "content": "Привет!"}],
     "max_tokens": 256
+  }'
+```
+
+Embeddings (`http://localhost:8888`):
+
+```bash
+curl http://localhost:8888/v1/embeddings \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "BAAI/bge-m3",
+    "input": "Привет!"
   }'
 ```
 
