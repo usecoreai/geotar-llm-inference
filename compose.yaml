@@ -24,7 +24,7 @@ services:
             - driver: nvidia
               device_ids: ["${LLM_GPU_DEVICE_ID:-0}"]
               capabilities: [gpu]
-              
+
   embeddings:
     image: vllm/vllm-openai:v0.27.1
     ipc: host
@@ -55,7 +55,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ["${EMBEDDINGS_GPU_DEVICE_ID:-0}"]
+              device_ids: ["${EMBEDDINGS_GPU_DEVICE_ID:-1}"]
               capabilities: [gpu]
 
   
